@@ -1,6 +1,61 @@
-= accessorize
+= Accessorize
 
-Description goes here.
+Log all data access for your ActiveRecord models
+
+== How does it work?
+
+Sometimes you need to keep rigid logs of who created, updated and even accessed 
+the data in your database. Accessorize simplifies the process by allowing you to 
+register observers for your models declaratively in one place. Each ovbserver
+will save access events to a single table "accessors" which stores the user that 
+is accessing the record, the type of access (create, update, view, destroy) and 
+the id of the record that was accessed.
+
+== Performance
+
+Because accessorize record view level access events it can become very slow. You
+should only enable it for heavily controlled models. For example, if you have an
+index page that lists all patients in your database in a table, a new access
+event is created for every row. Think of the children. 
+
+== Make it work
+
+First you need to install the gem (hosted on Gemcutter):
+
+  sudo gem install accessorize
+
+Then you need to run the generator in your project:
+
+  /my/cool/rails/app $ accessorize
+  
+Then you need to edit the accessorize.rb file in config/initializers. You can 
+control the automatic accessor and meta methods:
+
+  Accessorize.configure do |config|
+    config.accessor = :current_user # default
+    config.meta = :current_meta # default
+  end
+
+Accessorize uses these settings when your model is accessed from a controller. 
+When logging the "accessor_id", it will by default grab the id current_user from 
+the application controller. You can change which method is called and replace it 
+with something custom. 
+
+The meta information has no specific use. It could be used to store the users
+IP address, the current action or route, or really anything you like. Again,
+accessorize will by default try to access the current_meta method on the 
+application controller. You can define this method or point it to something 
+else. If the method does not exist, the meta attribute will be nil for the 
+record.
+
+If you are not saving from a controller you can simply set these values to 
+whatever you like:
+
+  Accessorize::Extension.accessor = 101
+  SomeAccessorizedModel.first
+  Accessorize::Accessor.last.accessor 
+  # => 101
+
 
 == Note on Patches/Pull Requests
  
